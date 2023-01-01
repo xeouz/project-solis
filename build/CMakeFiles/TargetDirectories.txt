@@ -1,0 +1,5 @@
+/home/dev0/Programming/project-solis/build/CMakeFiles/SOLIS.dir
+/home/dev0/Programming/project-solis/build/CMakeFiles/solis-image.dir
+/home/dev0/Programming/project-solis/build/CMakeFiles/stb-image.dir
+/home/dev0/Programming/project-solis/build/CMakeFiles/edit_cache.dir
+/home/dev0/Programming/project-solis/build/CMakeFiles/rebuild_cache.dir

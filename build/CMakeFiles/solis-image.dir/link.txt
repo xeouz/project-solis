@@ -1,0 +1,2 @@
+/home/dev0/Programming/llvm-project/build/bin/llvm-ar qc libsolis-image.a "CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o"
+/home/dev0/Programming/llvm-project/build/bin/llvm-ranlib libsolis-image.a
