@@ -87,6 +87,12 @@ build CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o: CXX_COMPILER__sol
   OBJECT_DIR = CMakeFiles/solis-image.dir
   OBJECT_FILE_DIR = CMakeFiles/solis-image.dir/src/solis-image
 
+build CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o: CXX_COMPILER__solis-image_Debug /home/dev0/Programming/project-solis/src/solis-image/s_algo.cc || cmake_object_order_depends_target_solis-image
+  DEP_FILE = CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o.d
+  FLAGS = -I/home/dev0/Programming/project-solis/src -std=c17 -g -std=gnu++20
+  OBJECT_DIR = CMakeFiles/solis-image.dir
+  OBJECT_FILE_DIR = CMakeFiles/solis-image.dir/src/solis-image
+
 
 # =============================================================================
 # Link build statements for STATIC_LIBRARY target solis-image
@@ -95,7 +101,7 @@ build CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o: CXX_COMPILER__sol
 #############################################
 # Link the static library libsolis-image.a
 
-build libsolis-image.a: CXX_STATIC_LIBRARY_LINKER__solis-image_Debug CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o
+build libsolis-image.a: CXX_STATIC_LIBRARY_LINKER__solis-image_Debug CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o
   LANGUAGE_COMPILE_FLAGS = -I/home/dev0/Programming/project-solis/src -std=c17 -g
   OBJECT_DIR = CMakeFiles/solis-image.dir
   POST_BUILD = :

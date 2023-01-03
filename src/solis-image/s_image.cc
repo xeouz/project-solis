@@ -1,25 +1,28 @@
 #include "s_image.h"
+#include "libs/stb_image/stb_image.h"
+#include "libs/stb_image/stb_image_write.h"
 
 #include <iostream>
-#include <fstream>
 #include <memory.h>
-
-#define FILE_HEADER_SIZE 14
-#define INFO_HEADER_SIZE 40
-#define BYTES_PER_PIXEL  3
 
 namespace solis
 {
 
 ////////////////////////////////////////////////////////////
+/// SColor
+////////////////////////////////////////////////////////////
+
+SColor::SColor(unsigned char r, unsigned char g, unsigned char b): r(r), g(g), b(b)
+{
+}
+
+////////////////////////////////////////////////////////////
 /// SImage
 ////////////////////////////////////////////////////////////
 
-SImage::SImage(unsigned int height, unsigned int width, unsigned char* image): height(height), width(width)
+SImage::SImage(unsigned int height, unsigned int width, unsigned char* image): height(height), width(width), colors_size(height * width * BYTES_PER_PIXEL)
 {
-    colors_size = height * width * BYTES_PER_PIXEL;
-
-    init_bitmap_colors();
+    init_bitmap_pixels();
     if(image)
     {
         memcpy(colors, image, colors_size);
@@ -29,33 +32,64 @@ SImage::SImage(unsigned int height, unsigned int width, unsigned char* image): h
         memset(colors, 0, colors_size);
     }
 }
+SImage::SImage(unsigned int height, unsigned int width, const char* path): height(height), width(width), colors_size(height * width * BYTES_PER_PIXEL)
+{
+    load_image(path);
+}
+SImage::SImage(const char* path): height(0), width(0), colors_size(0)
+{
+    load_image(path, true);
+}
 SImage::~SImage()
 {
     delete[] colors;
 }
+void SImage::load_image(const char* path, bool reset_dimensions)
+{
+    int h, w, channels;
+    colors=stbi_load(path, &w, &h, &channels, 3);
 
-void SImage::init_bitmap_colors()
+    if(colors == NULL)
+    {
+        std::cout << "SOLIS: File `" << path << "` could not be loaded, try using the absolute path" << std::endl;
+
+        // Create an empty image
+        init_bitmap_pixels();
+        memset(colors, 0, colors_size); 
+    }
+
+    if(reset_dimensions)
+    {
+        height = h;
+        width = w;
+        colors_size = h * w * 3;
+    }
+}
+
+unsigned int SImage::get_height() const
+{
+    return height;
+}
+unsigned int SImage::get_width() const
+{
+    return width;
+}
+unsigned int SImage::get_bitmap_size() const
+{
+    return colors_size;
+}
+
+void SImage::init_bitmap_pixels()
 {
     colors = new unsigned char[colors_size];
 }
-void SImage::set_pattern(void* pattern)
+void SImage::set_pixels(void* pixels)
 {
-    memcpy(colors, pattern, colors_size);
+    memcpy(colors, pixels, colors_size);
 }
-void SImage::create_rgb_pattern()
+unsigned char* const SImage::get_pixels() const
 {
-    unsigned char pattern[height][width][BYTES_PER_PIXEL];
-    unsigned int i, j;
-
-    for (i = 0; i < height; i++) {
-        for (j = 0; j < width; j++) {
-            pattern[i][j][0] = (unsigned char)( ((float)j / (float)width)*255 );           // R
-            pattern[i][j][1] = (unsigned char)( (1.0f - ((float)j / (float)width))*255 ); // G
-            pattern[i][j][2] = (unsigned char)( ((float)i / (float)height) *255 );         // B
-        }
-    }
-
-    memcpy(colors, pattern, colors_size);
+    return colors;
 }
 
 unsigned char* const SImage::get_color(unsigned int x, unsigned int y) const
@@ -63,12 +97,12 @@ unsigned char* const SImage::get_color(unsigned int x, unsigned int y) const
     unsigned int index=y*width+x;
     return colors+index+3;
 }
-void SImage::set_color(unsigned char* color, unsigned int x, unsigned int y)
+void SImage::set_color(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y)
 {
     unsigned int index=(y*width+x);
-    colors[index+2]=color[0];
-    colors[index+1]=color[1];
-    colors[index  ]=color[2];
+    colors[index+2]=r;
+    colors[index+1]=g;
+    colors[index  ]=b;
 }
 
 unsigned char* SImage::create_file_header(const unsigned int file_size) const
@@ -136,11 +170,14 @@ unsigned char* SImage::create_info_header() const
     return info_header;
 }
 
-unsigned char* const SImage::get_as_bitmap() const
+unsigned char* const SImage::generate_bitmap_format() const
 {
     return colors;
 }
-
+void SImage::export_to_file(const char* path) const
+{
+    stbi_write_bmp(path, width, height, 3, get_pixels());
+}
 /*
 void SImage::export_to_file(const char* path) const
 {

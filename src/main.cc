@@ -2,24 +2,19 @@
 #include <memory.h>
 
 #include "solis-image/s_image.h"
+#include "solis-image/s_algo.h"
 
 #include "libs/stb_image/stb_image.h"
 #include "libs/stb_image/stb_image_write.h"
 
 int main()
 {
-    int width, height, channels;
-    unsigned char* image=stbi_load("tests/anakinpanakin.png", &width, &height, &channels, 3);
+    solis::SImage img("tests/anakinpanakin.png");
 
-    if(image == NULL) {
-        printf("Error in loading the image\n");
-        exit(1);
-    }
+    solis::algo::apply_color(img, 100, 0, 0);
+    solis::algo::darken(img, 50);
 
-    std::cout << "Loaded image of height: " << height << " and width: " << width << " with " << channels << " channels" << std::endl;
+    img.export_to_file("test.bmp");
 
-    solis::SImage img(height, width);
-    img.create_rgb_pattern();
-    
-    stbi_write_bmp("test.bmp", width, height, channels, img.get_as_bitmap());
+    return 0;
 }
