@@ -1,6 +1,7 @@
 #pragma once
 
 #include "s_image.h"
+#include <string>
 
 #define DEFAULT_FONT_PIXEL_SIZE 64
 
@@ -22,6 +23,9 @@ namespace algo
 
     // Font algorithms
     void load_font(const char* font_path);
+    void prerender_font_glyphs(const char* charset, unsigned int charset_len);
+    void prerender_font_glyphs(std::string const& charset);
+    void prerender_font_glyphs();
     void set_font_pixel_size(unsigned int font_size_h, unsigned int font_size_w);
     void set_font_size(unsigned int font_size, unsigned int height, unsigned int width);
     void set_font_size(unsigned int size, SImage const& image);

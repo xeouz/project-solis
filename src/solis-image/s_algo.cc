@@ -1,6 +1,7 @@
 #include "s_algo.h"
 
 #include <iostream>
+#include <string>
 #include <unordered_map>
 #include <memory.h>
 
@@ -14,6 +15,7 @@ namespace algo
 {
     static FT_Library font_library;
     static FT_Face font_face;
+    static std::unordered_map<char, FT_Bitmap> font_bitmaps;
 
     void create_rgb_pattern(SImage& image)
     {
@@ -122,6 +124,34 @@ namespace algo
 
         set_font_pixel_size(DEFAULT_FONT_PIXEL_SIZE, DEFAULT_FONT_PIXEL_SIZE);
     }
+    void render_font_glyph(char ch) // Private method
+    {
+        FT_UInt glyph_index = FT_Get_Char_Index(font_face, ch);
+        FT_Error error = FT_Load_Glyph(font_face, glyph_index, FT_LOAD_RENDER);
+        if(error)
+        {
+            std::cout << "SOLIS: Could not render glpyh for character: `" << ch << "`" << std::endl;
+            return;
+        }
+    }
+    void prerender_font_glyphs(const char* charset, unsigned int charset_len)
+    {
+        for(unsigned int i=0; i<charset_len; ++i)
+        {
+            char ch = charset[i];
+            render_font_glyph(ch);
+            
+            FT_Bitmap_Copy(font_library, &font_face->glyph->bitmap, &font_bitmaps[ch]);
+        }
+    }
+    void prerender_font_glyphs(std::string const& charset)
+    {
+        prerender_font_glyphs(charset.c_str(), charset.size());
+    }
+    void prerender_font_glyphs()
+    {
+        prerender_font_glyphs("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
+    }
     void set_font_pixel_size(unsigned int font_size_h, unsigned int font_size_w)
     {
         FT_Error error= FT_Set_Pixel_Sizes(font_face, font_size_w, font_size_h);
@@ -146,20 +176,23 @@ namespace algo
     }
     void render_char(SImage& image, char ch, unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
     {
-        unsigned int height=image.get_height(), width=image.get_width();
-        FT_UInt glyph_index = FT_Get_Char_Index(font_face, ch);
-
-        FT_Error error = FT_Load_Glyph(font_face, glyph_index, FT_LOAD_RENDER);
-        if(error)
+        FT_Bitmap& bitmap=font_face->glyph->bitmap;
+        if(!font_bitmaps.count(ch)) // Glyph is not yet rendered
         {
-            std::cout << "SOLIS: Could not render glpyh for character: `" << ch << "`" << std::endl;
-            return;
+            render_font_glyph(ch);
+            bitmap = font_face->glyph->bitmap;
+        }
+        else
+        {
+            bitmap = font_bitmaps[ch];
         }
 
-        FT_Bitmap const& bitmap = font_face->glyph->bitmap;
-        unsigned int font_height=bitmap.rows, font_width=bitmap.width;
+        unsigned int font_height = bitmap.rows, font_width = bitmap.width;
         unsigned int i, j, p, q;
         FT_Int x_max = x+font_width, y_max = y+font_height;
+
+        if(x_max > image.get_width()) x_max = image.get_width();
+        if(y_max > image.get_height()) y_max = image.get_height();
 
         for(i=y, q=0; i<y_max; ++i, ++q)
         {
@@ -168,7 +201,9 @@ namespace algo
                 unsigned char pix=bitmap.buffer[q*font_width+p];
 
                 if(pix)
-                    image.set_pixel(r,g,b,j,i);
+                {
+                    image.set_pixel(r, g, b, j, i);
+                }
             }
         }
     }
