@@ -92,17 +92,17 @@ unsigned char* const SImage::get_pixels() const
     return colors;
 }
 
-unsigned char* const SImage::get_color(unsigned int x, unsigned int y) const
+unsigned char* const SImage::get_pixel(unsigned int x, unsigned int y) const
 {
-    unsigned int index=y*width+x;
+    unsigned int index=(y*width+x)*3;
     return colors+index+3;
 }
-void SImage::set_color(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y)
+void SImage::set_pixel(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y)
 {
-    unsigned int index=(y*width+x);
-    colors[index+2]=r;
+    unsigned int index=(y*width+x)*3;
+    colors[index  ]=r;
     colors[index+1]=g;
-    colors[index  ]=b;
+    colors[index+2]=b;
 }
 
 unsigned char* SImage::create_file_header(const unsigned int file_size) const

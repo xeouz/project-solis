@@ -26,7 +26,7 @@ class SImage
     void init_bitmap_pixels();
 public:
     SImage(unsigned int height, unsigned int width, unsigned char* image=nullptr);
-    SImage(unsigned int height, unsigned int width, const char* path="test.png");
+    SImage(unsigned int height, unsigned int width, const char* path);
     SImage(const char* path);
     ~SImage();
     void load_image(const char* path, bool reset_dimensions=false);
@@ -35,8 +35,8 @@ public:
     unsigned int get_width() const;
     unsigned int get_bitmap_size() const;
 
-    unsigned char* const get_color(unsigned int x, unsigned int y) const;
-    void set_color(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y);
+    unsigned char* const get_pixel(unsigned int x, unsigned int y) const;
+    void set_pixel(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y);
 
     void set_pixels(void* pixels);
     unsigned char* const get_pixels() const;

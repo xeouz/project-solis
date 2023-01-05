@@ -9690,7 +9690,7 @@ cfn=(1242)
 calls=2072520 0 
 0 8290080
 0 10368000
-cfn=(1244) solis::SImage::set_color(solis::SColor const&, unsigned int, unsigned int)
+cfn=(1244) solis::SImage::set_pixel(solis::SColor const&, unsigned int, unsigned int)
 calls=2073600 0 
 0 18662400
 0 6224043
