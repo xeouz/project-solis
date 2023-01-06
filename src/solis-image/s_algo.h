@@ -4,6 +4,10 @@
 #include <string>
 
 #define DEFAULT_FONT_PIXEL_SIZE 64
+#define DEFAULT_FONT_SPACING 10
+#define DEFAULT_FONT_USE_Y_OFFSET false
+#define DEFAULT_FONT_WHITESACE_WIDTH 20
+#define DEFAULT_FONT_PRERENDER_CHARSET ",.?/;:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()[]{}-+*="
 
 namespace solis
 {
@@ -29,7 +33,13 @@ namespace algo
     void set_font_pixel_size(unsigned int font_size_h, unsigned int font_size_w);
     void set_font_size(unsigned int font_size, unsigned int height, unsigned int width);
     void set_font_size(unsigned int size, SImage const& image);
-    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, unsigned char r=0, unsigned char g=0, unsigned char b=0);
-    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, SColor const& color);
+    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, unsigned char r=0, unsigned char g=0, unsigned char b=0, bool use_y_offset=DEFAULT_FONT_USE_Y_OFFSET);
+    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, SColor const& color, bool use_y_offset=DEFAULT_FONT_USE_Y_OFFSET);
+    void render_str(SImage& image, const char* str, unsigned int len, unsigned int whitespace_width=DEFAULT_FONT_WHITESACE_WIDTH, unsigned int spacing_px=DEFAULT_FONT_SPACING);
+    void render_str(SImage& image, std::string const& str, unsigned int whitespace_width=DEFAULT_FONT_WHITESACE_WIDTH, unsigned int spacing_px=DEFAULT_FONT_SPACING);
+
+    // Goofy algorithms
+    void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space);
+    void create_ascii_filter(SImage& image, std::string const& charset, bool use_uniform_space=false);
 }
 }

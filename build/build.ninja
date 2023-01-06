@@ -12,7 +12,7 @@
 
 # =============================================================================
 # Project: SOLIS
-# Configurations: Release
+# Configurations: Debug
 # =============================================================================
 
 #############################################
@@ -24,7 +24,7 @@ ninja_required_version = 1.5
 #############################################
 # Set configuration variable for custom commands.
 
-CONFIGURATION = Release
+CONFIGURATION = Debug
 # =============================================================================
 # Include auxiliary files.
 
@@ -49,9 +49,9 @@ cmake_ninja_workdir = /home/dev0/Programming/project-solis/build/
 
 build cmake_object_order_depends_target_SOLIS: phony || cmake_object_order_depends_target_solis-image cmake_object_order_depends_target_stb-image
 
-build CMakeFiles/SOLIS.dir/src/main.cc.o: CXX_COMPILER__SOLIS_Release /home/dev0/Programming/project-solis/src/main.cc || cmake_object_order_depends_target_SOLIS
+build CMakeFiles/SOLIS.dir/src/main.cc.o: CXX_COMPILER__SOLIS_Debug /home/dev0/Programming/project-solis/src/main.cc || cmake_object_order_depends_target_SOLIS
   DEP_FILE = CMakeFiles/SOLIS.dir/src/main.cc.o.d
-  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3 -std=gnu++20
+  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g -std=gnu++20
   INCLUDES = -I/usr/local/include/freetype2 -isystem /usr/local/zlib/include
   OBJECT_DIR = CMakeFiles/SOLIS.dir
   OBJECT_FILE_DIR = CMakeFiles/SOLIS.dir/src
@@ -64,8 +64,8 @@ build CMakeFiles/SOLIS.dir/src/main.cc.o: CXX_COMPILER__SOLIS_Release /home/dev0
 #############################################
 # Link the executable SOLIS
 
-build SOLIS: CXX_EXECUTABLE_LINKER__SOLIS_Release CMakeFiles/SOLIS.dir/src/main.cc.o | libsolis-image.a libstb-image.a /usr/local/lib/libfreetype.a /usr/local/zlib/lib/libz.so || libsolis-image.a libstb-image.a
-  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3
+build SOLIS: CXX_EXECUTABLE_LINKER__SOLIS_Debug CMakeFiles/SOLIS.dir/src/main.cc.o | libsolis-image.a libstb-image.a /usr/local/lib/libfreetype.a /usr/local/zlib/lib/libz.so || libsolis-image.a libstb-image.a
+  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g
   LINK_LIBRARIES = -Wl,-rpath,/usr/local/zlib/lib  libsolis-image.a  libstb-image.a  /usr/local/lib/libfreetype.a  /usr/local/zlib/lib/libz.so
   OBJECT_DIR = CMakeFiles/SOLIS.dir
   POST_BUILD = cd /home/dev0/Programming/project-solis/build && /home/dev0/.local/lib/python3.8/site-packages/cmake/data/bin/cmake -E copy_directory /home/dev0/Programming/project-solis/src/tests /home/dev0/Programming/project-solis/build/tests
@@ -82,15 +82,15 @@ build SOLIS: CXX_EXECUTABLE_LINKER__SOLIS_Release CMakeFiles/SOLIS.dir/src/main.
 
 build cmake_object_order_depends_target_solis-image: phony || CMakeFiles/solis-image.dir
 
-build CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o: CXX_COMPILER__solis-image_Release /home/dev0/Programming/project-solis/src/solis-image/s_image.cc || cmake_object_order_depends_target_solis-image
+build CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o: CXX_COMPILER__solis-image_Debug /home/dev0/Programming/project-solis/src/solis-image/s_image.cc || cmake_object_order_depends_target_solis-image
   DEP_FILE = CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o.d
-  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3 -std=gnu++20
+  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g -std=gnu++20
   OBJECT_DIR = CMakeFiles/solis-image.dir
   OBJECT_FILE_DIR = CMakeFiles/solis-image.dir/src/solis-image
 
-build CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o: CXX_COMPILER__solis-image_Release /home/dev0/Programming/project-solis/src/solis-image/s_algo.cc || cmake_object_order_depends_target_solis-image
+build CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o: CXX_COMPILER__solis-image_Debug /home/dev0/Programming/project-solis/src/solis-image/s_algo.cc || cmake_object_order_depends_target_solis-image
   DEP_FILE = CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o.d
-  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3 -std=gnu++20
+  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g -std=gnu++20
   OBJECT_DIR = CMakeFiles/solis-image.dir
   OBJECT_FILE_DIR = CMakeFiles/solis-image.dir/src/solis-image
 
@@ -102,8 +102,8 @@ build CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o: CXX_COMPILER__soli
 #############################################
 # Link the static library libsolis-image.a
 
-build libsolis-image.a: CXX_STATIC_LIBRARY_LINKER__solis-image_Release CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o
-  LANGUAGE_COMPILE_FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3
+build libsolis-image.a: CXX_STATIC_LIBRARY_LINKER__solis-image_Debug CMakeFiles/solis-image.dir/src/solis-image/s_image.cc.o CMakeFiles/solis-image.dir/src/solis-image/s_algo.cc.o
+  LANGUAGE_COMPILE_FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g
   OBJECT_DIR = CMakeFiles/solis-image.dir
   POST_BUILD = :
   PRE_LINK = :
@@ -119,9 +119,9 @@ build libsolis-image.a: CXX_STATIC_LIBRARY_LINKER__solis-image_Release CMakeFile
 
 build cmake_object_order_depends_target_stb-image: phony || CMakeFiles/stb-image.dir
 
-build CMakeFiles/stb-image.dir/src/libs/stb_image/stb_image.cc.o: CXX_COMPILER__stb-image_Release /home/dev0/Programming/project-solis/src/libs/stb_image/stb_image.cc || cmake_object_order_depends_target_stb-image
+build CMakeFiles/stb-image.dir/src/libs/stb_image/stb_image.cc.o: CXX_COMPILER__stb-image_Debug /home/dev0/Programming/project-solis/src/libs/stb_image/stb_image.cc || cmake_object_order_depends_target_stb-image
   DEP_FILE = CMakeFiles/stb-image.dir/src/libs/stb_image/stb_image.cc.o.d
-  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3 -std=gnu++20
+  FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g -std=gnu++20
   OBJECT_DIR = CMakeFiles/stb-image.dir
   OBJECT_FILE_DIR = CMakeFiles/stb-image.dir/src/libs/stb_image
 
@@ -133,8 +133,8 @@ build CMakeFiles/stb-image.dir/src/libs/stb_image/stb_image.cc.o: CXX_COMPILER__
 #############################################
 # Link the static library libstb-image.a
 
-build libstb-image.a: CXX_STATIC_LIBRARY_LINKER__stb-image_Release CMakeFiles/stb-image.dir/src/libs/stb_image/stb_image.cc.o
-  LANGUAGE_COMPILE_FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -O3
+build libstb-image.a: CXX_STATIC_LIBRARY_LINKER__stb-image_Debug CMakeFiles/stb-image.dir/src/libs/stb_image/stb_image.cc.o
+  LANGUAGE_COMPILE_FLAGS = -I/home/dev0/Programming/project-solis/src  -I/usr/local/include/freetype2 -std=c17 -g
   OBJECT_DIR = CMakeFiles/stb-image.dir
   POST_BUILD = :
   PRE_LINK = :

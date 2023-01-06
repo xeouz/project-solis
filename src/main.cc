@@ -7,19 +7,11 @@
 
 int main()
 {
-    solis::SImage img(1080, 1920);
+    solis::SImage img("tests/anakinpanakin.png");
 
     solis::algo::load_font("tests/font.ttf");
-    solis::algo::set_font_pixel_size(10, 10);
-    solis::algo::prerender_font_glyphs();
-    
-    for(int i=0; i<img.get_height(); i+=10)
-    {
-        for(int j=0; j<img.get_width(); j+=10)
-        {
-            solis::algo::render_char(img, 'A', j, i, 255, 0, 0);
-        }
-    }
+    solis::algo::set_font_size(1, img);
+    solis::algo::create_ascii_filter(img, "ABCD");
 
     img.export_to_file("test.bmp");
 

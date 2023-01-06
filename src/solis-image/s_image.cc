@@ -95,7 +95,7 @@ unsigned char* const SImage::get_pixels() const
 unsigned char* const SImage::get_pixel(unsigned int x, unsigned int y) const
 {
     unsigned int index=(y*width+x)*3;
-    return colors+index+3;
+    return colors+index;
 }
 void SImage::set_pixel(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y)
 {

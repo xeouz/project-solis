@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <random>
+#include <functional>
 #include <memory.h>
 
 #include <ft2build.h>
@@ -15,7 +17,8 @@ namespace algo
 {
     static FT_Library font_library;
     static FT_Face font_face;
-    static std::unordered_map<char, FT_Bitmap> font_bitmaps;
+    static std::unordered_map<char, std::pair<FT_Bitmap, FT_Glyph_Metrics>> font_bitmaps;
+    static std::pair<unsigned int, unsigned long> font_max_y;
 
     void create_rgb_pattern(SImage& image)
     {
@@ -133,15 +136,24 @@ namespace algo
             std::cout << "SOLIS: Could not render glpyh for character: `" << ch << "`" << std::endl;
             return;
         }
+
+        FT_Pos height = font_face->glyph->metrics.height;
+        if(font_max_y.second < height)
+        {
+            font_max_y.second = height;
+            font_max_y.first = height/64;
+        }
     }
     void prerender_font_glyphs(const char* charset, unsigned int charset_len)
     {
         for(unsigned int i=0; i<charset_len; ++i)
         {
             char ch = charset[i];
+            if(font_bitmaps.count(ch)) continue;
             render_font_glyph(ch);
             
-            FT_Bitmap_Copy(font_library, &font_face->glyph->bitmap, &font_bitmaps[ch]);
+            FT_Bitmap_Copy(font_library, &font_face->glyph->bitmap, &font_bitmaps[ch].first);
+            font_bitmaps[ch].second = font_face->glyph->metrics;
         }
     }
     void prerender_font_glyphs(std::string const& charset)
@@ -150,11 +162,11 @@ namespace algo
     }
     void prerender_font_glyphs()
     {
-        prerender_font_glyphs("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
+        prerender_font_glyphs(DEFAULT_FONT_PRERENDER_CHARSET);
     }
     void set_font_pixel_size(unsigned int font_size_h, unsigned int font_size_w)
     {
-        FT_Error error= FT_Set_Pixel_Sizes(font_face, font_size_w, font_size_h);
+        FT_Error error = FT_Set_Pixel_Sizes(font_face, font_size_w, font_size_h);
         if(error)
         {
             std::cout << "SOLIS: Could not set font pixel size to " << font_size_h << "x" << font_size_w << ", (height x width)" << std::endl;
@@ -174,27 +186,41 @@ namespace algo
     {
         set_font_size(size, image.get_height(), image.get_width());
     }
-    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
+    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b, bool use_y_offset)
     {
-        FT_Bitmap& bitmap=font_face->glyph->bitmap;
+        FT_Bitmap& bitmap = font_face->glyph->bitmap;
+        FT_Glyph_Metrics& metrics = font_face->glyph->metrics;
         if(!font_bitmaps.count(ch)) // Glyph is not yet rendered
         {
             render_font_glyph(ch);
             bitmap = font_face->glyph->bitmap;
+            metrics = font_face->glyph->metrics;
         }
         else
         {
-            bitmap = font_bitmaps[ch];
+            bitmap = font_bitmaps[ch].first;
+            metrics = font_bitmaps[ch].second;
         }
 
         unsigned int font_height = bitmap.rows, font_width = bitmap.width;
         unsigned int i, j, p, q;
         FT_Int x_max = x+font_width, y_max = y+font_height;
 
+        if(use_y_offset)
+        {
+            const unsigned int y_offset = (font_max_y.first) - bitmap.rows;
+            i = y_offset + y;
+            y_max += y_offset;
+        }
+        else
+        {
+            i = y;
+        }
+
         if(x_max > image.get_width()) x_max = image.get_width();
         if(y_max > image.get_height()) y_max = image.get_height();
 
-        for(i=y, q=0; i<y_max; ++i, ++q)
+        for(q=0; i<y_max; ++i, ++q)
         {
             for(j=x, p=0; j<x_max; ++j, ++p)
             {
@@ -207,9 +233,72 @@ namespace algo
             }
         }
     }
-    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, SColor const& color)
+    void render_char(SImage& image, char ch, unsigned int x, unsigned int y, SColor const& color, bool use_y_offset)
     {
-        render_char(image, ch, x, y, color.r, color.g, color.b);
+        render_char(image, ch, x, y, color.r, color.g, color.b, use_y_offset);
+    }
+    void render_str(SImage& image, const char* str, unsigned int len, unsigned int whitespace_width, unsigned int spacing_px)
+    {
+        unsigned int x=0, y_offset=0, i=0;
+        for(i=0; i<len && x<image.get_width(); ++i)
+        {
+            if(str[i] == ' ')
+            {
+                x += whitespace_width;
+                continue;
+            }
+            render_char(image, str[i], x, 0, 255, 0, 0, true);
+            x += font_face->glyph->metrics.width/64 + spacing_px;
+        }
+    }
+    void render_str(SImage& image, std::string const& str, unsigned int whitespace_width, unsigned int spacing_px)
+    {
+        render_str(image, str.c_str(), str.size());
+    }
+
+    void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space)
+    {
+        std::default_random_engine generator;
+        std::uniform_int_distribution<int> distrib(0, charset_len-1);
+        auto random_fn = std::bind(distrib, generator);
+
+        prerender_font_glyphs(charset, charset_len); // Prerender font glyphs since we need to use font_max_y
+
+        unsigned int block_size_xy = font_max_y.first;
+        unsigned int height=image.get_height(), width=image.get_width();
+
+        unsigned char pattern[height][width][BYTES_PER_PIXEL];
+        memcpy(pattern, image.get_pixels(), image.get_bitmap_size());
+        memset(image.get_pixels(), 0, image.get_bitmap_size());
+
+        unsigned int i, j;
+        unsigned int x, y, sum_r, sum_g, sum_b, avg_r, avg_g, avg_b, block_size_xy_sq=block_size_xy*block_size_xy;
+        for(i = 0; i<height-block_size_xy; i+=block_size_xy)
+        {
+            for(j = 0; j<width-block_size_xy; j+=use_uniform_space?(block_size_xy):(font_face->glyph->metrics.width/64))
+            {
+                // Get the average brightness of the current block of size block_size_xy*block_size_xy
+                sum_r = sum_g = sum_b = 0;
+                for(y=i; y<i+block_size_xy; ++y)
+                {
+                    for(x=j; x<j+block_size_xy; ++x)
+                    {
+                        unsigned char* indx = pattern[y][x];
+                        sum_r += indx[0]; sum_g += indx[1], sum_b = indx[2];
+                    }
+                }
+
+                avg_r = sum_r/block_size_xy_sq;
+                avg_g = sum_g/block_size_xy_sq;
+                avg_b = sum_b/block_size_xy_sq;
+
+                render_char(image, charset[random_fn()], j, i, avg_r, avg_g, avg_b, true);
+            }
+        }
+    }
+    void create_ascii_filter(SImage& image, std::string const& charset, bool use_uniform_space)
+    {
+        create_ascii_filter(image, charset.c_str(), charset.size(), use_uniform_space);
     }
 }
 }

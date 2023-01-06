@@ -22,7 +22,7 @@ CMAKE_AR:FILEPATH=/home/dev0/Programming/llvm-project/build/bin/llvm-ar
 
 //Choose the type of build, options are: None Debug Release RelWithDebInfo
 // MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=Release
+CMAKE_BUILD_TYPE:STRING=Debug
 
 //CXX compiler
 CMAKE_CXX_COMPILER:FILEPATH=/home/dev0/Programming/llvm-project/build/bin/clang++
