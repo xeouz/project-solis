@@ -1,1 +1,0 @@
-/home/dev0/Programming/llvm-project/build/bin/clang++  -I/home/dev0/Programming/project-solis/src CMakeFiles/VIRELANG.dir/src/main.cc.o -o VIRELANG 

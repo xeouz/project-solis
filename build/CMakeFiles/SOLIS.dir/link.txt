@@ -1,1 +1,0 @@
-/home/dev0/Programming/llvm-project/build/bin/clang++  -I/home/dev0/Programming/project-solis/src -Ofast CMakeFiles/SOLIS.dir/src/main.cc.o -o SOLIS  libsolis-image.a 
