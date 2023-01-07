@@ -21,6 +21,8 @@ namespace algo
     void create_rgb_pattern(SImage& image);
     void apply_color(SImage& image, unsigned char rstep=1, unsigned char gstep=1, unsigned char bstep=1);
     void apply_color(SImage& image, SColor const& color);
+    void blend_color(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
+    void blend_color(SImage& image, double alpha, SColor const& color);
     void darken(SImage& image, unsigned char darken_amount);
     void apply_fade_pattern(SImage& image, unsigned char r=0, unsigned char g=0, unsigned char b=0);
     void apply_fade_pattern(SImage& image, SColor const& color);
@@ -31,8 +33,8 @@ namespace algo
     void prerender_font_glyphs(std::string const& charset);
     void prerender_font_glyphs();
     void set_font_pixel_size(unsigned int font_size_h, unsigned int font_size_w);
-    void set_font_size(unsigned int font_size, unsigned int height, unsigned int width);
-    void set_font_size(unsigned int size, SImage const& image);
+    void set_font_size(double font_size, unsigned int height, unsigned int width);
+    void set_font_size(double size, SImage const& image);
     void render_char(SImage& image, char ch, unsigned int x, unsigned int y, unsigned char r=0, unsigned char g=0, unsigned char b=0, bool use_y_offset=DEFAULT_FONT_USE_Y_OFFSET);
     void render_char(SImage& image, char ch, unsigned int x, unsigned int y, SColor const& color, bool use_y_offset=DEFAULT_FONT_USE_Y_OFFSET);
     void render_str(SImage& image, const char* str, unsigned int len, unsigned int whitespace_width=DEFAULT_FONT_WHITESACE_WIDTH, unsigned int spacing_px=DEFAULT_FONT_SPACING);

@@ -10,6 +10,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_BITMAP_H
+#include FT_LCD_FILTER_H
 
 namespace solis
 {
@@ -73,6 +74,29 @@ namespace algo
     {
         apply_color(image, color.r, color.g, color.b);
     }
+    void blend_color(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b)
+    {
+        double one_minus_alpha = (1 - alpha);
+        unsigned char new_r, new_g, new_b;
+        unsigned int i, j, h=image.get_height(), w=image.get_width();
+        
+        for(i=0; i<h; ++i)
+        {
+            for(j=0; j<w; ++j)
+            {
+                unsigned char* pixel = image.get_pixel(j, i);
+                new_r = (alpha * r) + (one_minus_alpha * pixel[0]);
+                new_g = (alpha * g) + (one_minus_alpha * pixel[1]);
+                new_b = (alpha * b) + (one_minus_alpha * pixel[2]);
+
+                image.set_pixel(new_r, new_g, new_b, j, i);
+            }
+        }
+    }
+    void blend_color(SImage& image, double alpha, SColor const& color)
+    {
+        blend_color(image, alpha, color.r, color.g, color.b);
+    }
     void darken(SImage& image, unsigned char darken_amount)
     {
         unsigned int lightness=256-darken_amount;
@@ -130,10 +154,17 @@ namespace algo
     void render_font_glyph(char ch) // Private method
     {
         FT_UInt glyph_index = FT_Get_Char_Index(font_face, ch);
-        FT_Error error = FT_Load_Glyph(font_face, glyph_index, FT_LOAD_RENDER);
+        FT_Error error = FT_Load_Glyph(font_face, glyph_index, FT_LOAD_DEFAULT);
         if(error)
         {
-            std::cout << "SOLIS: Could not render glpyh for character: `" << ch << "`" << std::endl;
+            std::cout << "SOLIS: Could not LOAD glpyh for character: `" << ch << "`" << std::endl;
+            return;
+        }
+
+        error = FT_Render_Glyph(font_face->glyph, FT_RENDER_MODE_NORMAL);
+        if(error)
+        {
+            std::cout << "SOLIS: Could not RENDER glpyh for character: `" << ch << "`" << std::endl;
             return;
         }
 
@@ -173,7 +204,7 @@ namespace algo
             return;
         }
     }
-    void set_font_size(unsigned int font_size, unsigned int height, unsigned int width)
+    void set_font_size(double font_size, unsigned int height, unsigned int width)
     {
         FT_Error error = FT_Set_Char_Size(font_face, 0, font_size*64, height, width);
         if(error)
@@ -182,7 +213,7 @@ namespace algo
             return;
         }
     }
-    void set_font_size(unsigned int size, SImage const& image)
+    void set_font_size(double size, SImage const& image)
     {
         set_font_size(size, image.get_height(), image.get_width());
     }
@@ -258,6 +289,7 @@ namespace algo
 
     void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space)
     {
+        FT_Library_SetLcdFilter(font_library, FT_LCD_FILTER_DEFAULT);
         std::default_random_engine generator;
         std::uniform_int_distribution<int> distrib(0, charset_len-1);
         auto random_fn = std::bind(distrib, generator);
@@ -272,19 +304,26 @@ namespace algo
         memset(image.get_pixels(), 0, image.get_bitmap_size());
 
         unsigned int i, j;
-        unsigned int x, y, sum_r, sum_g, sum_b, avg_r, avg_g, avg_b, block_size_xy_sq=block_size_xy*block_size_xy;
-        for(i = 0; i<height-block_size_xy; i+=block_size_xy)
+        unsigned int x, y, sum_r, sum_g, sum_b, block_size_xy_sq=block_size_xy*block_size_xy;
+        unsigned int avg_r, avg_g, avg_b, jlim, ilim;
+        for(i = 0; i<height; i+=block_size_xy)
         {
-            for(j = 0; j<width-block_size_xy; j+=use_uniform_space?(block_size_xy):(font_face->glyph->metrics.width/64))
+            for(j = 0; j<width; j+=use_uniform_space?(block_size_xy):(font_face->glyph->metrics.width/64))
             {
-                // Get the average brightness of the current block of size block_size_xy*block_size_xy
+                // Get the average color of the current block of size block_size_xy*block_size_xy
                 sum_r = sum_g = sum_b = 0;
-                for(y=i; y<i+block_size_xy; ++y)
+                ilim = i+block_size_xy;
+                jlim = j+block_size_xy;
+
+                if((ilim > height) || (jlim > width))
+                    continue;
+                
+                for(y=i; y<ilim; ++y)
                 {
-                    for(x=j; x<j+block_size_xy; ++x)
+                    for(x=j; x<jlim; ++x)
                     {
                         unsigned char* indx = pattern[y][x];
-                        sum_r += indx[0]; sum_g += indx[1], sum_b = indx[2];
+                        sum_r += indx[0]; sum_g += indx[1]; sum_b += indx[2];
                     }
                 }
 

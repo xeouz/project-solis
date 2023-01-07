@@ -3,6 +3,8 @@
 #include "libs/stb_image/stb_image_write.h"
 
 #include <iostream>
+#include <unordered_map>
+#include <tuple>
 #include <memory.h>
 
 namespace solis
@@ -12,8 +14,54 @@ namespace solis
 /// SColor
 ////////////////////////////////////////////////////////////
 
+static std::unordered_map<const char*, int> color_hex_values({
+{"red",        0xFF0000},
+{"white",      0xFFFFFF},
+{"cyan",       0x00FFFF},
+{"silver",     0xC0C0C0},
+{"blue",       0x0000FF},
+{"gray",       0x808080},
+{"dark-blue",  0x00008B},
+{"black",      0x000000},
+{"light-blue", 0xADD8E6},
+{"orange",     0xFFA500},
+{"purple",     0x800080},
+{"brown",      0xA52A2A},
+{"yellow",     0xFFFF00},
+{"maroon",     0x800000},
+{"lime",       0x00FF00},
+{"green",      0x008000},
+{"magenta",    0xFF00FF},
+{"olive",      0x808000},
+{"pink",       0xFFC0CB},
+{"aquamarine", 0x7FFFD4},
+});
+
+std::tuple<unsigned char, unsigned char, unsigned char> hex_to_rgb(int hex)
+{
+    unsigned char r = ((hex >> 16) & 0xFF);
+    unsigned char g = ((hex >> 8) & 0xFF);
+    unsigned char b = ((hex) & 0xFF);
+
+    return std::tuple<unsigned char, unsigned char, unsigned char>(r, g, b);
+}
+std::tuple<unsigned char, unsigned char, unsigned char> hex_to_rgb(const char* col_name)
+{
+    return hex_to_rgb(color_hex_values[col_name]);
+}
+
 SColor::SColor(unsigned char r, unsigned char g, unsigned char b): r(r), g(g), b(b)
 {
+}
+SColor::SColor(const char* col_name)
+{
+    std::tuple<unsigned char, unsigned char, unsigned char> rgb = hex_to_rgb(col_name);
+    r = std::get<0>(rgb); g = std::get<1>(rgb); b = std::get<2>(rgb);
+}
+SColor::SColor(int col_hex)
+{
+    std::tuple<unsigned char, unsigned char, unsigned char> rgb = hex_to_rgb(col_hex);
+    r = std::get<0>(rgb); g = std::get<1>(rgb); b = std::get<2>(rgb);
 }
 
 ////////////////////////////////////////////////////////////
@@ -176,7 +224,7 @@ unsigned char* const SImage::generate_bitmap_format() const
 }
 void SImage::export_to_file(const char* path) const
 {
-    stbi_write_bmp(path, width, height, 3, get_pixels());
+    stbi_write_jpg(path, width, height, 3, get_pixels(), 100);
 }
 /*
 void SImage::export_to_file(const char* path) const

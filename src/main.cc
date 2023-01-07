@@ -7,13 +7,11 @@
 
 int main()
 {
-    solis::SImage img("tests/anakinpanakin.png");
-
+    solis::SImage img("tests/ghost.jpg");
     solis::algo::load_font("tests/font.ttf");
-    solis::algo::set_font_size(1, img);
-    solis::algo::create_ascii_filter(img, "ABCD");
+    solis::algo::set_font_pixel_size(50, 50);
 
-    img.export_to_file("test.bmp");
+    img.export_to_file("test.jpg");
 
     return 0;
 }

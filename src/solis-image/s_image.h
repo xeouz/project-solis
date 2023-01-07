@@ -4,6 +4,8 @@
 #define INFO_HEADER_SIZE 40
 #define BYTES_PER_PIXEL  3
 
+#include <string>
+
 namespace solis
 {
 
@@ -12,7 +14,11 @@ class SColor
 public:
     unsigned char r, g, b;
 public:
-    SColor(unsigned char r=0, unsigned char g=0, unsigned char b=0);
+    SColor(unsigned char r, unsigned char g, unsigned char b);
+    SColor(const char* col_name);
+    SColor(int col_hex=0x0);
+
+    unsigned char* const as_rgb() const;
 };
 
 class SImage
