@@ -4,6 +4,7 @@
 #define INFO_HEADER_SIZE 40
 #define BYTES_PER_PIXEL  3
 
+#include "uchar.h"
 #include <string>
 
 namespace solis
@@ -18,7 +19,7 @@ public:
     SColor(const char* col_name);
     SColor(int col_hex=0x0);
 
-    unsigned char* const as_rgb() const;
+    unsigned char* as_rgb() const;
 };
 
 class SImage
@@ -41,13 +42,13 @@ public:
     unsigned int get_width() const;
     unsigned int get_bitmap_size() const;
 
-    unsigned char* const get_pixel(unsigned int x, unsigned int y) const;
+    unsigned char* get_pixel(unsigned int x, unsigned int y) const;
     void set_pixel(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y);
 
     void set_pixels(void* pixels);
-    unsigned char* const get_pixels() const;
+    unsigned char* get_pixels() const;
     
-    unsigned char* const generate_bitmap_format() const;
+    unsigned char* generate_bitmap_format() const;
     void export_to_file(const char* path) const;
 };
 

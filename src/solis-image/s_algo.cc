@@ -1,4 +1,5 @@
 #include "s_algo.h"
+#include "s_algo.cuh"
 
 #include <iostream>
 #include <string>
@@ -21,21 +22,33 @@ namespace algo
     static std::unordered_map<char, std::pair<FT_Bitmap, FT_Glyph_Metrics>> font_bitmaps;
     static std::pair<unsigned int, unsigned long> font_max_y;
 
+    void init_cuda(SImage& image)
+    {
+        wrapper_init_cuda(image.get_pixels(), image.get_height(), image.get_width());
+    }
+    void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b)
+    {
+        wrapper_blend_color_gpu(image.get_pixels(), image.get_height(), image.get_width(), alpha, r, g, b);
+    }
+    void finish_cuda(SImage& image)
+    {
+        image.set_pixels(wrapper_finish_cuda(image.get_height(), image.get_width()));
+    }
+
     void create_rgb_pattern(SImage& image)
     {
         unsigned int height=image.get_height(), width=image.get_width();
-        unsigned char pattern[height][width][BYTES_PER_PIXEL];
-        unsigned int i, j;
+        unsigned char* pattern = image.get_pixels();
+        unsigned int i, j, idx;
 
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
-                pattern[i][j][0] = (unsigned char)( ((float)j / (float)width)*255 );           // R
-                pattern[i][j][1] = (unsigned char)( (1.0f - ((float)j / (float)width))*255 ); // G
-                pattern[i][j][2] = (unsigned char)( ((float)i / (float)height) *255 );         // B
+                idx = (i*width+j)*BYTES_PER_PIXEL;
+                pattern[idx  ] = (unsigned char)( ((float)j / (float)width)*255 );           // R
+                pattern[idx+1] = (unsigned char)( (1.0f - ((float)j / (float)width))*255 ); // G
+                pattern[idx+2] = (unsigned char)( ((float)i / (float)height) *255 );         // B
             }
         }
-
-        image.set_pixels(pattern);
     }
     void apply_color(SImage& image, unsigned char r, unsigned char g, unsigned char b)
     {
@@ -85,6 +98,7 @@ namespace algo
             for(j=0; j<w; ++j)
             {
                 unsigned char* pixel = image.get_pixel(j, i);
+
                 new_r = (alpha * r) + (one_minus_alpha * pixel[0]);
                 new_g = (alpha * g) + (one_minus_alpha * pixel[1]);
                 new_b = (alpha * b) + (one_minus_alpha * pixel[2]);

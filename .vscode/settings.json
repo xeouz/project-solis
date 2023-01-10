@@ -46,6 +46,20 @@
         "typeinfo": "cpp",
         "*.xbm": "cpp",
         "cinttypes": "cpp",
-        "map": "cpp"
-    }
+        "map": "cpp",
+        "bitset": "cpp",
+        "chrono": "cpp",
+        "codecvt": "cpp",
+        "condition_variable": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "set": "cpp",
+        "ratio": "cpp",
+        "iomanip": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "__nullptr": "cpp",
+        "__locale": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }

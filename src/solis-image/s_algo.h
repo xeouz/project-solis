@@ -1,6 +1,7 @@
 #pragma once
 
 #include "s_image.h"
+#include "uchar.h"
 #include <string>
 
 #define DEFAULT_FONT_PIXEL_SIZE 64
@@ -17,6 +18,11 @@ namespace solis
 // `apply_xxx_pattern` means to apply a certain pattern on the existing image
 namespace algo
 {
+    // Internal GPU based algorithms
+    void init_cuda(SImage& image);
+    void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
+    void finish_cuda(SImage& image);
+
     // Color pattern algorithms
     void create_rgb_pattern(SImage& image);
     void apply_color(SImage& image, unsigned char rstep=1, unsigned char gstep=1, unsigned char bstep=1);

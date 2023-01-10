@@ -135,12 +135,12 @@ void SImage::set_pixels(void* pixels)
 {
     memcpy(colors, pixels, colors_size);
 }
-unsigned char* const SImage::get_pixels() const
+unsigned char* SImage::get_pixels() const
 {
     return colors;
 }
 
-unsigned char* const SImage::get_pixel(unsigned int x, unsigned int y) const
+unsigned char* SImage::get_pixel(unsigned int x, unsigned int y) const
 {
     unsigned int index=(y*width+x)*3;
     return colors+index;
@@ -218,7 +218,7 @@ unsigned char* SImage::create_info_header() const
     return info_header;
 }
 
-unsigned char* const SImage::generate_bitmap_format() const
+unsigned char* SImage::generate_bitmap_format() const
 {
     return colors;
 }
