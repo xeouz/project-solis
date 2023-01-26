@@ -59,7 +59,10 @@
         "mutex": "cpp",
         "thread": "cpp",
         "__nullptr": "cpp",
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "__functional_base": "cpp",
+        "locale": "cpp",
+        "ios": "cpp"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

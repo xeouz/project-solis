@@ -18,11 +18,6 @@ namespace solis
 // `apply_xxx_pattern` means to apply a certain pattern on the existing image
 namespace algo
 {
-    // Internal GPU based algorithms
-    void init_cuda(SImage& image);
-    void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
-    void finish_cuda(SImage& image);
-
     // Color pattern algorithms
     void create_rgb_pattern(SImage& image);
     void apply_color(SImage& image, unsigned char rstep=1, unsigned char gstep=1, unsigned char bstep=1);
@@ -49,5 +44,13 @@ namespace algo
     // Goofy algorithms
     void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space);
     void create_ascii_filter(SImage& image, std::string const& charset, bool use_uniform_space=false);
+
+    // Internal GPU based algorithms
+    void init_cuda(SImage& image);
+    void finish_cuda(SImage& image);
+    void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
+    void blend_color_gpu(SImage& image, double alpha, SColor const& color);
+    void create_ascii_filter_gpu(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space);
+    void create_ascii_filter_gpu(SImage& image, std::string const& charset, bool use_uniform_space=false);
 }
 }

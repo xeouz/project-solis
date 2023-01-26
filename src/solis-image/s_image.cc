@@ -68,17 +68,10 @@ SColor::SColor(int col_hex)
 /// SImage
 ////////////////////////////////////////////////////////////
 
-SImage::SImage(unsigned int height, unsigned int width, unsigned char* image): height(height), width(width), colors_size(height * width * BYTES_PER_PIXEL)
+SImage::SImage(unsigned int height, unsigned int width): height(height), width(width), colors_size(height * width * BYTES_PER_PIXEL)
 {
     init_bitmap_pixels();
-    if(image)
-    {
-        memcpy(colors, image, colors_size);
-    }
-    else
-    {
-        memset(colors, 0, colors_size);
-    }
+    memset(colors, 0, colors_size);
 }
 SImage::SImage(unsigned int height, unsigned int width, const char* path): height(height), width(width), colors_size(height * width * BYTES_PER_PIXEL)
 {
@@ -122,7 +115,7 @@ unsigned int SImage::get_width() const
 {
     return width;
 }
-unsigned int SImage::get_bitmap_size() const
+unsigned int SImage::get_pixels_size() const
 {
     return colors_size;
 }
@@ -142,7 +135,7 @@ unsigned char* SImage::get_pixels() const
 
 unsigned char* SImage::get_pixel(unsigned int x, unsigned int y) const
 {
-    unsigned int index=(y*width+x)*3;
+    unsigned int index=(y*width+x)*BYTES_PER_PIXEL;
     return colors+index;
 }
 void SImage::set_pixel(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y)

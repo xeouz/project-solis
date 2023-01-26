@@ -32,7 +32,7 @@ class SImage
     unsigned char* create_info_header() const;
     void init_bitmap_pixels();
 public:
-    SImage(unsigned int height, unsigned int width, unsigned char* image=nullptr);
+    SImage(unsigned int height, unsigned int width);
     SImage(unsigned int height, unsigned int width, const char* path);
     SImage(const char* path);
     ~SImage();
@@ -40,7 +40,7 @@ public:
 
     unsigned int get_height() const;
     unsigned int get_width() const;
-    unsigned int get_bitmap_size() const;
+    unsigned int get_pixels_size() const;
 
     unsigned char* get_pixel(unsigned int x, unsigned int y) const;
     void set_pixel(unsigned char r, unsigned char g, unsigned char b, unsigned int x, unsigned int y);

@@ -13,6 +13,9 @@
 #include FT_BITMAP_H
 #include FT_LCD_FILTER_H
 
+#define MAX(a, b) a>b?a:b
+#define MIN(a, b) a>b?b:a
+
 namespace solis
 {
 namespace algo
@@ -21,19 +24,7 @@ namespace algo
     static FT_Face font_face;
     static std::unordered_map<char, std::pair<FT_Bitmap, FT_Glyph_Metrics>> font_bitmaps;
     static std::pair<unsigned int, unsigned long> font_max_y;
-
-    void init_cuda(SImage& image)
-    {
-        wrapper_init_cuda(image.get_pixels(), image.get_height(), image.get_width());
-    }
-    void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b)
-    {
-        wrapper_blend_color_gpu(image.get_pixels(), image.get_height(), image.get_width(), alpha, r, g, b);
-    }
-    void finish_cuda(SImage& image)
-    {
-        image.set_pixels(wrapper_finish_cuda(image.get_height(), image.get_width()));
-    }
+    static std::pair<unsigned int, unsigned long> font_max_x;
 
     void create_rgb_pattern(SImage& image)
     {
@@ -56,7 +47,7 @@ namespace algo
         unsigned int h=image.get_height(), w=image.get_width();
 
         unsigned char pattern[h][w][BYTES_PER_PIXEL];
-        memcpy(pattern, image.get_pixels(), image.get_bitmap_size());
+        memcpy(pattern, image.get_pixels(), image.get_pixels_size());
 
         for(y=0; y<h; ++y)
         {
@@ -118,7 +109,7 @@ namespace algo
         unsigned int h=image.get_height(), w=image.get_width();
 
         unsigned char pattern[h][w][BYTES_PER_PIXEL];
-        memcpy(pattern, image.get_pixels(), image.get_bitmap_size());
+        memcpy(pattern, image.get_pixels(), image.get_pixels_size());
 
         for(y=0; y<h; ++y)
         {
@@ -183,10 +174,16 @@ namespace algo
         }
 
         FT_Pos height = font_face->glyph->metrics.height;
+        FT_Pos width = font_face->glyph->metrics.width;
         if(font_max_y.second < height)
         {
             font_max_y.second = height;
             font_max_y.first = height/64;
+        }
+        if(font_max_x.second < width)
+        {
+            font_max_x.second = width;
+            font_max_x.first = width/64;
         }
     }
     void prerender_font_glyphs(const char* charset, unsigned int charset_len)
@@ -314,8 +311,8 @@ namespace algo
         unsigned int height=image.get_height(), width=image.get_width();
 
         unsigned char pattern[height][width][BYTES_PER_PIXEL];
-        memcpy(pattern, image.get_pixels(), image.get_bitmap_size());
-        memset(image.get_pixels(), 0, image.get_bitmap_size());
+        memcpy(pattern, image.get_pixels(), image.get_pixels_size());
+        memset(image.get_pixels(), 0, image.get_pixels_size());
 
         unsigned int i, j;
         unsigned int x, y, sum_r, sum_g, sum_b, block_size_xy_sq=block_size_xy*block_size_xy;
@@ -352,6 +349,57 @@ namespace algo
     void create_ascii_filter(SImage& image, std::string const& charset, bool use_uniform_space)
     {
         create_ascii_filter(image, charset.c_str(), charset.size(), use_uniform_space);
+    }
+
+    void init_cuda(SImage& image)
+    {
+        wrapper_init_cuda(image.get_pixels(), image.get_height(), image.get_width());
+    }
+    void finish_cuda(SImage& image)
+    {
+        image.set_pixels(wrapper_finish_cuda());
+    }
+    void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b)
+    {
+        wrapper_blend_color_gpu(image.get_pixels(), alpha, r, g, b);
+    }
+    void blend_color_gpu(SImage& image, double alpha, SColor const& color)
+    {
+        blend_color_gpu(image, alpha, color.r, color.g, color.b);
+    }
+    void create_ascii_filter_gpu(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space)
+    {
+        prerender_font_glyphs(charset, charset_len);
+
+        unsigned int height=image.get_height(), width=image.get_width();
+        wrapper_average_reduce_adjust_size(image.get_pixels_size(), font_max_y.first, font_max_x.first);
+        wrapper_average_reduce_gpu(image.get_pixels(), charset, charset_len, font_max_y.first, font_max_x.first, use_uniform_space);
+
+        FT_Library_SetLcdFilter(font_library, FT_LCD_FILTER_DEFAULT);
+        unsigned char* pixels=wrapper_finish_cuda();
+        unsigned int i, j, avg_r, avg_g, avg_b, rand_num, idx;
+        unsigned int ysize=font_max_y.first, xsize=font_max_x.first;
+
+        for(i=0; i<height; i+=ysize)
+        {
+            for(j=0; j<width; j+=xsize)
+            {
+                idx = (i*width+j)*BYTES_PER_PIXEL;
+                if((i+ysize)>height || (j+xsize)>width)
+                {
+                    pixels[idx] = 0; pixels[idx+1] = 0; pixels[idx+2] = 0;
+                    continue;
+                }
+
+                avg_r = pixels[idx]; avg_g = pixels[idx+1]; avg_b = pixels[idx+2], rand_num = pixels[idx+3];
+                render_char(image, charset[rand_num], j, i, avg_r, avg_g, avg_b, true);
+                pixels[idx] = 0; pixels[idx+1] = 0; pixels[idx+2] = 0;
+            }
+        }
+    }
+    void create_ascii_filter_gpu(SImage& image, std::string const& charset, bool use_uniform_space)
+    {
+        create_ascii_filter_gpu(image, charset.c_str(), charset.size(), use_uniform_space);
     }
 }
 }
