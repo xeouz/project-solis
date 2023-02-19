@@ -298,7 +298,7 @@ namespace algo
         render_str(image, str.c_str(), str.size());
     }
 
-    void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space)
+    void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len)
     {
         FT_Library_SetLcdFilter(font_library, FT_LCD_FILTER_DEFAULT);
         std::default_random_engine generator;
@@ -319,7 +319,7 @@ namespace algo
         unsigned int avg_r, avg_g, avg_b, jlim, ilim;
         for(i = 0; i<height; i+=block_size_xy)
         {
-            for(j = 0; j<width; j+=use_uniform_space?(block_size_xy):(font_face->glyph->metrics.width/64))
+            for(j = 0; j<width; j+=block_size_xy)
             {
                 // Get the average color of the current block of size block_size_xy*block_size_xy
                 sum_r = sum_g = sum_b = 0;
@@ -346,9 +346,9 @@ namespace algo
             }
         }
     }
-    void create_ascii_filter(SImage& image, std::string const& charset, bool use_uniform_space)
+    void create_ascii_filter(SImage& image, std::string const& charset)
     {
-        create_ascii_filter(image, charset.c_str(), charset.size(), use_uniform_space);
+        create_ascii_filter(image, charset.c_str(), charset.size());
     }
 
     void init_cuda(SImage& image)
@@ -361,19 +361,19 @@ namespace algo
     }
     void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b)
     {
-        wrapper_blend_color_gpu(image.get_pixels(), alpha, r, g, b);
+        wrapper_blend_color_gpu(alpha, r, g, b);
     }
     void blend_color_gpu(SImage& image, double alpha, SColor const& color)
     {
         blend_color_gpu(image, alpha, color.r, color.g, color.b);
     }
-    void create_ascii_filter_gpu(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space)
+    void create_ascii_filter_gpu(SImage& image, const char* charset, unsigned int charset_len)
     {
         prerender_font_glyphs(charset, charset_len);
 
         unsigned int height=image.get_height(), width=image.get_width();
         wrapper_average_reduce_adjust_size(image.get_pixels_size(), font_max_y.first, font_max_x.first);
-        wrapper_average_reduce_gpu(image.get_pixels(), charset, charset_len, font_max_y.first, font_max_x.first, use_uniform_space);
+        wrapper_average_reduce_gpu(charset, charset_len, font_max_y.first, font_max_x.first);
 
         FT_Library_SetLcdFilter(font_library, FT_LCD_FILTER_DEFAULT);
         unsigned char* pixels=wrapper_finish_cuda();
@@ -396,10 +396,12 @@ namespace algo
                 pixels[idx] = 0; pixels[idx+1] = 0; pixels[idx+2] = 0;
             }
         }
+
+        wrapper_init_cuda(pixels, height, width);
     }
-    void create_ascii_filter_gpu(SImage& image, std::string const& charset, bool use_uniform_space)
+    void create_ascii_filter_gpu(SImage& image, std::string const& charset)
     {
-        create_ascii_filter_gpu(image, charset.c_str(), charset.size(), use_uniform_space);
+        create_ascii_filter_gpu(image, charset.c_str(), charset.size());
     }
 }
 }

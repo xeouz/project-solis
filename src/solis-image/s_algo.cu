@@ -147,13 +147,14 @@ namespace solis
         cudaFree(in_gpu_pixels);
         cudaMalloc((void**) &in_gpu_pixels, new_size);
         cudaMemcpy(in_gpu_pixels, buffer, new_size, cudaMemcpyHostToDevice);
+        resized_size = new_size;
     }
     void wrapper_average_reduce_adjust_size(unsigned int old_size, unsigned int font_size_y,  unsigned int font_size_x)
     {
         unsigned int size=calculate_average_reduce_realloc_size(old_size, font_size_y, font_size_x);
         wrapper_realloc_pixels_gpu(size, resized_width);
     }
-    void wrapper_blend_color_gpu(unsigned char* pixels, double alpha, unsigned char r, unsigned char g, unsigned char b)
+    void wrapper_blend_color_gpu(double alpha, unsigned char r, unsigned char g, unsigned char b)
     {
         constexpr const int threads = DEFAULT_CUDA_NUM_THREADS;
         unsigned int num_blocks_w = resized_width/threads + (bool)(resized_width%threads);
@@ -162,13 +163,9 @@ namespace solis
         dim3 grid = dim3(num_blocks_w, num_blocks_h);
         double one_minus_alpha = (1 - alpha);
 
-        std::cout << num_blocks_w*threads << std::endl;
-
         internal_blend_color_gpu<<<grid, threads_per_block>>>(in_gpu_pixels, resized_width, one_minus_alpha, alpha, r, g, b);
-        gpuErrchk(cudaPeekAtLastError());
-        gpuErrchk(cudaDeviceSynchronize());
     }
-    void wrapper_average_reduce_gpu(unsigned char* img, const char* charset, unsigned int charset_len, unsigned int font_size_y, unsigned int font_size_x, bool use_uniform_space)
+    void wrapper_average_reduce_gpu(const char* charset, unsigned int charset_len, unsigned int font_size_y, unsigned int font_size_x)
     {
         constexpr const int threads = DEFAULT_CUDA_NUM_THREADS;
         unsigned int advance_x = (threads*font_size_x), advance_y = (threads*font_size_y);
@@ -181,14 +178,11 @@ namespace solis
 
         cudaMalloc(&rand_state, num_blocks_h * num_blocks_w * threads*threads * sizeof(curandState));
         internal_curand_init<<<grid, threads_per_block>>>(rand_state, num_blocks_w, 1);
-        gpuErrchk(cudaPeekAtLastError());
 
         char* charset_gpu;
         cudaMalloc(&charset_gpu, charset_size);
         cudaMemcpy(charset_gpu, charset, charset_size, cudaMemcpyHostToDevice);
         internal_average_reduce_gpu<<<grid, threads_per_block>>>(in_gpu_pixels, charset_len, font_size_y, font_size_x, resized_width, num_blocks_w, rand_state);
-        gpuErrchk(cudaPeekAtLastError());
-        gpuErrchk(cudaDeviceSynchronize());
         cudaFree(&charset_gpu);
     }
     unsigned char* wrapper_finish_cuda()
