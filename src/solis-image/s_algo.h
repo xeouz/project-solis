@@ -42,15 +42,16 @@ namespace algo
     void render_str(SImage& image, std::string const& str, unsigned int whitespace_width=DEFAULT_FONT_WHITESACE_WIDTH, unsigned int spacing_px=DEFAULT_FONT_SPACING);
 
     // Goofy algorithms
-    void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space);
-    void create_ascii_filter(SImage& image, std::string const& charset, bool use_uniform_space=false);
+    void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len);
+    void create_ascii_filter(SImage& image, std::string const& charset);
+    
 
     // Internal GPU based algorithms
     void init_cuda(SImage& image);
     void finish_cuda(SImage& image);
     void blend_color_gpu(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
     void blend_color_gpu(SImage& image, double alpha, SColor const& color);
-    void create_ascii_filter_gpu(SImage& image, const char* charset, unsigned int charset_len, bool use_uniform_space);
-    void create_ascii_filter_gpu(SImage& image, std::string const& charset, bool use_uniform_space=false);
+    void create_ascii_filter_gpu(SImage& image, const char* charset, unsigned int charset_len);
+    void create_ascii_filter_gpu(SImage& image, std::string const& charset);
 }
 }
