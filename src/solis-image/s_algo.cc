@@ -26,6 +26,7 @@ namespace algo
     static std::pair<unsigned int, unsigned long> font_max_y;
     static std::pair<unsigned int, unsigned long> font_max_x;
 
+    ///-- Basic Rendering --///
     void create_rgb_pattern(SImage& image)
     {
         unsigned int height=image.get_height(), width=image.get_width();
@@ -102,27 +103,23 @@ namespace algo
     {
         blend_color(image, alpha, color.r, color.g, color.b);
     }
-    void darken(SImage& image, unsigned char darken_amount)
+    void darken(SImage& image, unsigned int darken_amount)
     {
-        unsigned int lightness=256-darken_amount;
+        unsigned int lightness=100-darken_amount;
         unsigned int x=0, y=0;
         unsigned int h=image.get_height(), w=image.get_width();
-
-        unsigned char pattern[h][w][BYTES_PER_PIXEL];
-        memcpy(pattern, image.get_pixels(), image.get_pixels_size());
+        unsigned char new_r, new_g, new_b;
 
         for(y=0; y<h; ++y)
         {
             for(x=0; x<w; x++)
             {
-                unsigned char (&col)[3]=pattern[y][x];
-                col[0]=(unsigned char)(col[0]*lightness/256);
-                col[1]=(unsigned char)(col[1]*lightness/256);
-                col[2]=(unsigned char)(col[2]*lightness/256);
+                unsigned char* pixel = image.get_pixel(x, y);
+                pixel[0]=(unsigned char)(pixel[0]*lightness/100);
+                pixel[1]=(unsigned char)(pixel[1]*lightness/100);
+                pixel[2]=(unsigned char)(pixel[2]*lightness/100);
             }
         }
-
-        image.set_pixels(pattern);
     }
     void apply_fade_pattern(SImage& image, unsigned char r, unsigned char g, unsigned char b)
     {
@@ -132,7 +129,9 @@ namespace algo
     {
         apply_fade_pattern(image, color.r, color.g, color.b);
     }
+    //--- Basic Rendering ---//
 
+    ///-- Font and Character Rendering --///
     void load_font(const char* font_path)
     {
         FT_Error error = FT_Init_FreeType( &font_library );
@@ -202,6 +201,16 @@ namespace algo
     {
         prerender_font_glyphs(charset.c_str(), charset.size());
     }
+    void prerender_font_glyphs(char start, char end)
+    {
+        char* st=(char*)malloc(end-start+2);
+        int j=0;
+        for(int i=start; i<=end; ++i)
+            st[j++] = i;
+        st[j] = '\0';
+        prerender_font_glyphs(st, end-start+1);
+        free(st);
+    }
     void prerender_font_glyphs()
     {
         prerender_font_glyphs(DEFAULT_FONT_PRERENDER_CHARSET);
@@ -234,7 +243,10 @@ namespace algo
         FT_Glyph_Metrics& metrics = font_face->glyph->metrics;
         if(!font_bitmaps.count(ch)) // Glyph is not yet rendered
         {
+            std::cout << "Not rendered: " << ch << std::endl;
             render_font_glyph(ch);
+            FT_Bitmap_Copy(font_library, &font_face->glyph->bitmap, &font_bitmaps[ch].first);
+            font_bitmaps[ch].second = font_face->glyph->metrics;
             bitmap = font_face->glyph->bitmap;
             metrics = font_face->glyph->metrics;
         }
@@ -297,6 +309,7 @@ namespace algo
     {
         render_str(image, str.c_str(), str.size());
     }
+    //--- Font and Character Rendering ---//
 
     void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len)
     {
@@ -351,6 +364,63 @@ namespace algo
         create_ascii_filter(image, charset.c_str(), charset.size());
     }
 
+    ///-- Matrix Rain --///
+    unsigned int* matrix_generation_drops; // X-Coordinate = Index && Y-Coordinate = Value 
+    unsigned int num_cols; 
+    unsigned int col_height;
+    char ascii_range_a, ascii_range_b;
+
+    template<typename Integral>
+    Integral randint(Integral min, Integral max)
+    {
+        using param_type =
+            typename std::uniform_int_distribution<Integral>::param_type;
+
+        // only create these once (per thread)
+        thread_local static std::mt19937 eng {std::random_device{}()};
+        thread_local static std::uniform_int_distribution<Integral> dist;
+
+        // presumably a param_type is cheaper than a uniform_int_distribution
+        return dist(eng, param_type{min, max});
+    }
+    void init_matrix_rain(SImage& img, char ascii_range_start, char ascii_range_end)
+    {
+        prerender_font_glyphs(ascii_range_start, ascii_range_end);
+        num_cols = (img.get_width() / font_max_x.first) + (img.get_width() % font_max_x.first);
+        col_height = img.get_height() / font_max_y.first;
+        matrix_generation_drops = (unsigned int*)malloc(num_cols*sizeof(unsigned int));
+
+        ascii_range_a = ascii_range_start;
+        ascii_range_b = ascii_range_end;
+        
+        for(unsigned int i=0; i<num_cols; ++i)
+            matrix_generation_drops[i] = 0;
+
+    }
+    void generate_matrix_rain_frame(SImage& frame)
+    {
+        unsigned int i;
+        
+        for(i=0; i<num_cols; ++i)
+        {
+            render_char(frame, randint<int>(ascii_range_a, ascii_range_b), i*font_max_x.first, matrix_generation_drops[i]*font_max_y.first, 10, 255, 10);
+
+            if(matrix_generation_drops[i] > col_height && randint<int>(0, 1000) > 975)
+                matrix_generation_drops[i] = 0;
+            else
+                matrix_generation_drops[i]++;
+        }
+
+        darken(frame, 5);
+    }
+    void end_matrix_rain()
+    {
+        free(matrix_generation_drops);
+        num_cols = col_height = 0;
+    }
+    //--- Matrix Rain ---//
+
+    ///-- CUDA Functions --///
     void init_cuda(SImage& image)
     {
         wrapper_init_cuda(image.get_pixels(), image.get_height(), image.get_width());
@@ -403,5 +473,6 @@ namespace algo
     {
         create_ascii_filter_gpu(image, charset.c_str(), charset.size());
     }
+    //--- CUDA Functions ---//
 }
 }

@@ -3,12 +3,13 @@
 #include "s_image.h"
 #include "uchar.h"
 #include <string>
+#include <vector>
 
 #define DEFAULT_FONT_PIXEL_SIZE 64
 #define DEFAULT_FONT_SPACING 10
 #define DEFAULT_FONT_USE_Y_OFFSET false
 #define DEFAULT_FONT_WHITESACE_WIDTH 20
-#define DEFAULT_FONT_PRERENDER_CHARSET ",.?/;:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()[]{}-+*="
+#define DEFAULT_FONT_PRERENDER_CHARSET ",.?/;:abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()[]{}-+*=\\"
 
 namespace solis
 {
@@ -24,7 +25,7 @@ namespace algo
     void apply_color(SImage& image, SColor const& color);
     void blend_color(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
     void blend_color(SImage& image, double alpha, SColor const& color);
-    void darken(SImage& image, unsigned char darken_amount);
+    void darken(SImage& image, unsigned int darken_amount);
     void apply_fade_pattern(SImage& image, unsigned char r=0, unsigned char g=0, unsigned char b=0);
     void apply_fade_pattern(SImage& image, SColor const& color);
 
@@ -32,6 +33,7 @@ namespace algo
     void load_font(const char* font_path);
     void prerender_font_glyphs(const char* charset, unsigned int charset_len);
     void prerender_font_glyphs(std::string const& charset);
+    void prerender_font_glyphs(char start, char end);
     void prerender_font_glyphs();
     void set_font_pixel_size(unsigned int font_size_h, unsigned int font_size_w);
     void set_font_size(double font_size, unsigned int height, unsigned int width);
@@ -44,7 +46,11 @@ namespace algo
     // Goofy algorithms
     void create_ascii_filter(SImage& image, const char* charset, unsigned int charset_len);
     void create_ascii_filter(SImage& image, std::string const& charset);
-    
+
+    // Matrix Rain
+    void init_matrix_rain(SImage& image, char ascii_range_start='A', char ascii_range_end='Z');
+    void generate_matrix_rain_frame(SImage& frame);
+    void end_matrix_rain();
 
     // Internal GPU based algorithms
     void init_cuda(SImage& image);
