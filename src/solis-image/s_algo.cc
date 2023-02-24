@@ -82,21 +82,16 @@ namespace algo
     void blend_color(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b)
     {
         double one_minus_alpha = (1 - alpha);
-        unsigned char new_r, new_g, new_b;
-        unsigned int i, j, h=image.get_height(), w=image.get_width();
-        
-        for(i=0; i<h; ++i)
+        unsigned int size = image.get_height() * image.get_width();
+        unsigned char* pixels = image.get_pixels();
+        unsigned char* pixel;
+
+        for(unsigned int i=0; i<size; ++i)
         {
-            for(j=0; j<w; ++j)
-            {
-                unsigned char* pixel = image.get_pixel(j, i);
-
-                new_r = (alpha * r) + (one_minus_alpha * pixel[0]);
-                new_g = (alpha * g) + (one_minus_alpha * pixel[1]);
-                new_b = (alpha * b) + (one_minus_alpha * pixel[2]);
-
-                image.set_pixel(new_r, new_g, new_b, j, i);
-            }
+            pixel = pixels+(i*BYTES_PER_PIXEL);
+            pixel[0] = (alpha * r) + (one_minus_alpha * pixel[0]);
+            pixel[1] = (alpha * r) + (one_minus_alpha * pixel[1]);
+            pixel[2] = (alpha * r) + (one_minus_alpha * pixel[2]);
         }
     }
     void blend_color(SImage& image, double alpha, SColor const& color)
@@ -106,19 +101,16 @@ namespace algo
     void darken(SImage& image, unsigned int darken_amount)
     {
         unsigned int lightness=100-darken_amount;
-        unsigned int x=0, y=0;
-        unsigned int h=image.get_height(), w=image.get_width();
-        unsigned char new_r, new_g, new_b;
+        unsigned int size = image.get_height() * image.get_width();
+        unsigned char* pixels = image.get_pixels();
+        unsigned char* pixel;
 
-        for(y=0; y<h; ++y)
+        for(unsigned int i=0; i<size; ++i)
         {
-            for(x=0; x<w; x++)
-            {
-                unsigned char* pixel = image.get_pixel(x, y);
-                pixel[0]=(unsigned char)(pixel[0]*lightness/100);
-                pixel[1]=(unsigned char)(pixel[1]*lightness/100);
-                pixel[2]=(unsigned char)(pixel[2]*lightness/100);
-            }
+            pixel = pixels+(i*BYTES_PER_PIXEL);
+            pixel[0] = (unsigned char)(pixel[0]*lightness/100);
+            pixel[1] = (unsigned char)(pixel[1]*lightness/100);
+            pixel[2] = (unsigned char)(pixel[2]*lightness/100);
         }
     }
     void apply_fade_pattern(SImage& image, unsigned char r, unsigned char g, unsigned char b)
