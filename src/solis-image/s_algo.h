@@ -19,15 +19,15 @@ namespace solis
 // `apply_xxx_pattern` means to apply a certain pattern on the existing image
 namespace algo
 {
-    // Color pattern algorithms
+    // Image modifying algorithms
     void create_rgb_pattern(SImage& image);
     void apply_color(SImage& image, unsigned char rstep=1, unsigned char gstep=1, unsigned char bstep=1);
     void apply_color(SImage& image, SColor const& color);
     void blend_color(SImage& image, double alpha, unsigned char r, unsigned char g, unsigned char b);
     void blend_color(SImage& image, double alpha, SColor const& color);
     void darken(SImage& image, unsigned int darken_amount);
-    void apply_fade_pattern(SImage& image, unsigned char r=0, unsigned char g=0, unsigned char b=0);
-    void apply_fade_pattern(SImage& image, SColor const& color);
+    void blend_image(SImage& base_image, SImage& secondary_image, double alpha);
+    void paste_image(SImage& base_image, SImage& secondary_image, unsigned int x, unsigned int y);
 
     // Font algorithms
     void load_font(const char* font_path);

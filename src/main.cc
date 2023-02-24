@@ -8,7 +8,7 @@ using namespace std::chrono;
 #include "solis-image/s_image.h"
 #include "solis-image/s_algo.h"
 
-int main()
+int matrix_rain_test()
 {
     solis::SImage img(1080, 1920);
     solis::algo::load_font("tests/font.ttf");
@@ -22,11 +22,20 @@ int main()
         std::string n="out/frame";
         n+=std::to_string(i);
         n+=".jpg";
-        // img.export_to_file(n.c_str());
+        // img.save_as(n.c_str());
     }
     system_clock::time_point b=system_clock::now();
     std::cout << "Took: " << (duration_cast<milliseconds>(b-a).count()/1000.0) << std::endl;
     solis::algo::end_matrix_rain();
 
     return 0;
+}
+
+int main()
+{
+    solis::SImage ghost("tests/ghost.jpg");
+    solis::SImage chicken("tests/chicken.png");
+
+    solis::algo::paste_image(chicken, ghost, 0, 0);
+    chicken.save_as("test.jpg");
 }

@@ -49,7 +49,7 @@ public:
     unsigned char* get_pixels() const;
     
     unsigned char* generate_bitmap_format() const;
-    void export_to_file(const char* path) const;
+    void save_as(const char* path) const;
 };
 
 }

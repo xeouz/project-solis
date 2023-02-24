@@ -215,12 +215,12 @@ unsigned char* SImage::generate_bitmap_format() const
 {
     return colors;
 }
-void SImage::export_to_file(const char* path) const
+void SImage::save_as(const char* path) const
 {
     stbi_write_jpg(path, width, height, 3, get_pixels(), 100);
 }
 /*
-void SImage::export_to_file(const char* path) const
+void SImage::save_as(const char* path) const
 {
     FILE* file=std::fopen(path, "wb");
     unsigned char padding[3] = {0, 0, 0};

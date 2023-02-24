@@ -44,36 +44,17 @@ namespace algo
     }
     void apply_color(SImage& image, unsigned char r, unsigned char g, unsigned char b)
     {
-        unsigned int x=0, y=0;
-        unsigned int h=image.get_height(), w=image.get_width();
+        unsigned int size = image.get_height() * image.get_width();
+        unsigned char* pixels = image.get_pixels();
+        unsigned char* pixel;
 
-        unsigned char pattern[h][w][BYTES_PER_PIXEL];
-        memcpy(pattern, image.get_pixels(), image.get_pixels_size());
-
-        for(y=0; y<h; ++y)
+        for(unsigned int i=0; i<size; ++i)
         {
-            for(x=0; x<w; x++)
-            {
-                unsigned char (&col)[3]=pattern[y][x];
-                if(r>0)
-                {
-                    if(col[0]+r > 255) col[0]=255;
-                    else    col[0]+=r;
-                }
-                if(g>0)
-                {
-                    if(col[1]+g > 255) col[1]=255;
-                    else    col[1]+=g;
-                }
-                if(b>0)
-                {
-                    if(col[2]+b > 255) col[2]=255;
-                    else    col[2]+=b;
-                }
-            }
+            pixel = pixels+(i*BYTES_PER_PIXEL);
+            pixel[0] += r;
+            pixel[1] += g;
+            pixel[2] += b;
         }
-
-        image.set_pixels(pattern);
     }
     void apply_color(SImage& image, SColor const& color)
     {
@@ -90,8 +71,8 @@ namespace algo
         {
             pixel = pixels+(i*BYTES_PER_PIXEL);
             pixel[0] = (alpha * r) + (one_minus_alpha * pixel[0]);
-            pixel[1] = (alpha * r) + (one_minus_alpha * pixel[1]);
-            pixel[2] = (alpha * r) + (one_minus_alpha * pixel[2]);
+            pixel[1] = (alpha * g) + (one_minus_alpha * pixel[1]);
+            pixel[2] = (alpha * b) + (one_minus_alpha * pixel[2]);
         }
     }
     void blend_color(SImage& image, double alpha, SColor const& color)
@@ -113,13 +94,54 @@ namespace algo
             pixel[2] = (unsigned char)(pixel[2]*lightness/100);
         }
     }
-    void apply_fade_pattern(SImage& image, unsigned char r, unsigned char g, unsigned char b)
+    void blend_image(SImage& base_image, SImage& secondary_image, double alpha)
     {
+        if(base_image.get_pixels_size() != secondary_image.get_pixels_size())
+        {
+            std::cout << "SOLIS: blend_image() parameters given incorrectly. Images must be of same size!" << std::endl;
+            return;
+        }
 
+        double one_minus_alpha = (1 - alpha);
+        unsigned int size = base_image.get_height() * base_image.get_width();
+        unsigned char* base_pixels = base_image.get_pixels(), * blend_pixels = secondary_image.get_pixels();
+        unsigned char* pixel1, * pixel2;
+        unsigned int index;
+
+        for(unsigned int i=0; i<size; ++i)
+        {
+            index = i*BYTES_PER_PIXEL;
+            pixel1 = base_pixels+index;
+            pixel2 = blend_pixels+index;
+            pixel1[0] = (alpha * pixel2[0]) + (one_minus_alpha * pixel1[0]);
+            pixel1[1] = (alpha * pixel2[1]) + (one_minus_alpha * pixel1[1]);
+            pixel1[2] = (alpha * pixel2[2]) + (one_minus_alpha * pixel1[2]);
+        }
     }
-    void apply_fade_pattern(SImage& image, SColor const& color)
+    void paste_image(SImage& base_image, SImage& secondary_image, unsigned int x, unsigned int y)
     {
-        apply_fade_pattern(image, color.r, color.g, color.b);
+        unsigned int baseh = base_image.get_height(), basew = base_image.get_width();
+        unsigned int sech = secondary_image.get_height(), secw = secondary_image.get_width();
+        unsigned char* base_pixels = base_image.get_pixels(), * paste_pixels = secondary_image.get_pixels();
+        unsigned char* pixel1, * pixel2;
+
+        unsigned int i, j, i2=0, j2=0; // i,j = base_image && i2,j2 = secondary_image
+        for(i=y; i2<sech; ++i)
+        {
+            if(i>=baseh) break;
+            j2=0;
+            for(j=x; j2<secw; ++j)
+            {
+                if(j>=basew) break;
+                pixel1 = base_pixels+((i*basew+j)*BYTES_PER_PIXEL);
+                pixel2 = paste_pixels+((i2*secw+j2)*BYTES_PER_PIXEL);
+                pixel1[0] = pixel2[0];
+                pixel1[1] = pixel2[1];
+                pixel1[2] = pixel2[2];
+                ++j2;
+            }
+            ++i2;
+        }
     }
     //--- Basic Rendering ---//
 
